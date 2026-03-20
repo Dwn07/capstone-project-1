@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StanScope</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream: #F7F3EE;
+  --warm-white: #FDFAF7;
+  --ink: #1A1612;
+  --muted: #7A6E65;
+  --accent: #C4622D;
+  --accent-light: #F0DDD3;
+  --border: #E2D9D0;
+  --green: #2D7A4F;
+  --green-light: #D3EDE0;
+  --amber: #B8740A;
+  --amber-light: #FAEBD0;
+  --red: #9B2626;
+  --red-light: #F5D5D5;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* =================== PAGES =================== */
+.page { display: none; min-height: 100vh; }
+.page.active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+/* =================== BG DECORATION =================== */
+.bg-blob {
+  position: fixed; pointer-events: none; border-radius: 50%; z-index: 0;
+}
+.blob-1 { width: 500px; height: 500px; background: radial-gradient(circle, #E8C9B8 0%, transparent 70%); top: -180px; right: -120px; }
+.blob-2 { width: 350px; height: 350px; background: radial-gradient(circle, #D4E8E0 0%, transparent 70%); bottom: -80px; left: -80px; }
+.bg-vline { position: fixed; width: 1px; background: var(--border); top: 0; bottom: 0; z-index: 0; }
+.vline-l { left: 11%; }
+.vline-r { right: 11%; }
+
+/* =================== INTRO PAGE =================== */
+#page-intro { padding: 2rem; position: relative; }
+
+.intro-inner {
+  position: relative; z-index: 10;
+  width: 100%; max-width: 540px;
+  text-align: center;
+}
+
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-light);
+  padding: 6px 14px; border-radius: 20px; margin-bottom: 1.8rem;
+  animation: fadeUp 0.7s ease both; animation-delay: 0.2s;
+}
+.eyebrow::before { content: ''; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
+
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(52px, 12vw, 78px); font-weight: 700;
+  line-height: 1; letter-spacing: -0.02em; color: var(--ink);
+  margin-bottom: 0.3rem;
+  animation: fadeUp 0.8s ease both; animation-delay: 0.4s;
+}
+.logo em { font-style: italic; color: var(--accent); }
+
+.tagline {
+  font-family: 'Playfair Display', serif; font-style: italic;
+  font-size: 16px; color: var(--muted); margin-bottom: 2rem;
+  animation: fadeUp 0.7s ease both; animation-delay: 0.6s;
+}
+
+.divider-line {
+  width: 48px; height: 1px; background: var(--accent); margin: 0 auto 2rem;
+  animation: growW 0.6s ease both; animation-delay: 0.8s;
+}
+@keyframes growW { from { width: 0; opacity: 0; } to { width: 48px; opacity: 1; } }
+
+.description {
+  font-size: 15px; font-weight: 300; line-height: 1.85; color: var(--muted);
+  margin-bottom: 2.2rem;
+  animation: fadeUp 0.7s ease both; animation-delay: 0.9s;
+}
+.description strong { color: var(--ink); font-weight: 500; }
+
+.input-section { animation: fadeUp 0.7s ease both; animation-delay: 1.1s; width: 100%; }
+
+.input-label {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 8px; display: block; text-align: left;
+}
+
+.celebrity-input {
+  width: 100%; background: var(--warm-white);
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 15px 18px; font-family: 'DM Sans', sans-serif;
+  font-size: 16px; color: var(--ink); outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s; margin-bottom: 12px;
+}
+.celebrity-input::placeholder { color: #C4B8B0; }
+.celebrity-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(196,98,45,0.1); }
+
+.cat-row { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 1.8rem; }
+.cat-btn {
+  font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 400;
+  color: var(--muted); background: var(--warm-white);
+  border: 1px solid var(--border); border-radius: 20px;
+  padding: 7px 13px; cursor: pointer; transition: all 0.18s ease;
+}
+.cat-btn:hover { border-color: var(--accent); color: var(--accent); }
+.cat-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.cta-btn {
+  width: 100%; background: var(--ink); color: var(--cream);
+  border: none; border-radius: 12px; padding: 17px 24px;
+  font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500;
+  letter-spacing: 0.02em; cursor: pointer;
+  transition: all 0.2s ease; position: relative; overflow: hidden;
+}
+.cta-btn::after { content: '→'; position: absolute; right: 22px; top: 50%; transform: translateY(-50%); transition: transform 0.2s ease; }
+.cta-btn:hover:not(:disabled) { background: var(--accent); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(196,98,45,0.25); }
+.cta-btn:hover:not(:disabled)::after { transform: translateY(-50%) translateX(4px); }
+.cta-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
+.footer-note {
+  margin-top: 1.8rem; font-size: 12px; color: #B0A49C;
+  animation: fadeUp 0.6s ease both; animation-delay: 1.4s;
+}
+
+/* =================== QUIZ PAGE =================== */
+#page-quiz {
+  padding: 2rem;
+  justify-content: flex-start;
+  padding-top: 3rem;
+}
+
+.quiz-inner { position: relative; z-index: 10; width: 100%; max-width: 600px; }
+
+.quiz-header { margin-bottom: 2.5rem; }
+
+.quiz-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 1rem;
+}
+.quiz-meta-left { font-size: 12px; color: var(--muted); }
+.quiz-meta-right { font-size: 12px; color: var(--muted); }
+.q-count { font-weight: 500; color: var(--ink); }
+
+.progress-track {
+  width: 100%; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: var(--accent); border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.section-tag {
+  display: inline-block; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-light);
+  padding: 4px 10px; border-radius: 20px; margin-bottom: 1.2rem;
+}
+
+.question-text {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(20px, 4vw, 26px); font-weight: 400; line-height: 1.4;
+  color: var(--ink); margin-bottom: 2.2rem;
+  min-height: 80px;
+}
+
+.answer-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.5rem; }
+
+.answer-btn {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--warm-white); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 18px; cursor: pointer;
+  transition: all 0.18s ease; font-family: 'DM Sans', sans-serif;
+  text-align: left;
+}
+.answer-btn:hover { border-color: var(--accent); background: var(--accent-light); }
+.answer-btn.selected { border-color: var(--accent); background: var(--accent); color: #fff; }
+.answer-btn.selected .answer-num { background: rgba(255,255,255,0.25); color: #fff; }
+
+.answer-num {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: var(--border); display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 500; color: var(--muted);
+  transition: all 0.18s ease;
+}
+.answer-label { font-size: 14px; font-weight: 400; }
+.answer-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.answer-btn.selected .answer-sub { color: rgba(255,255,255,0.75); }
+
+.back-btn {
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 12px; padding: 11px 20px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400;
+  color: var(--muted); cursor: pointer; transition: all 0.18s ease;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.back-btn:hover { border-color: var(--accent); color: var(--accent); }
+.back-btn:disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+
+/* =================== RESULT PAGE =================== */
+#page-result { padding: 2rem; justify-content: flex-start; padding-top: 3rem; padding-bottom: 4rem; }
+
+.result-inner { position: relative; z-index: 10; width: 100%; max-width: 600px; }
+
+.result-level-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 6px 14px; border-radius: 20px; margin-bottom: 1.5rem;
+}
+
+.result-headline {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(26px, 5vw, 36px); font-weight: 700; line-height: 1.3;
+  color: var(--ink); margin-bottom: 0.6rem;
+}
+
+.result-score-row {
+  display: flex; align-items: baseline; gap: 10px; margin-bottom: 2rem;
+}
+.result-score-num {
+  font-family: 'Playfair Display', serif; font-size: 56px; font-weight: 700;
+  line-height: 1; color: var(--accent);
+}
+.result-score-denom { font-size: 18px; color: var(--muted); }
+
+.result-card {
+  background: var(--warm-white); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem;
+}
+.result-card-label {
+  font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 8px;
+}
+.result-card-text { font-size: 15px; font-weight: 300; line-height: 1.75; color: var(--ink); }
+.result-card-text strong { font-weight: 500; }
+
+.reflection-box {
+  border-left: 3px solid var(--accent); padding: 1rem 1.2rem;
+  background: var(--accent-light); border-radius: 0 12px 12px 0;
+  margin-bottom: 1rem;
+}
+.reflection-label { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+.reflection-text { font-family: 'Playfair Display', serif; font-style: italic; font-size: 16px; line-height: 1.6; color: var(--ink); }
+
+.actions-section { margin-top: 1.5rem; }
+.actions-title { font-size: 13px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+.action-item {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.action-item:last-child { border-bottom: none; }
+.action-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-top: 7px; }
+.action-text { font-size: 14px; font-weight: 300; line-height: 1.6; color: var(--ink); }
+
+.top-questions { margin-bottom: 1rem; }
+.top-q-title { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.top-q-item {
+  background: var(--warm-white); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 14px; margin-bottom: 8px;
+  font-size: 13px; font-weight: 300; line-height: 1.5; color: var(--ink);
+}
+.top-q-score { float: right; font-weight: 500; color: var(--accent); }
+
+.result-btn-row { display: flex; gap: 10px; margin-top: 2rem; }
+
+.share-btn {
+  flex: 1; background: var(--ink); color: var(--cream);
+  border: none; border-radius: 12px; padding: 15px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.share-btn:hover { background: var(--accent); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(196,98,45,0.2); }
+.share-btn.copied { background: var(--green); }
+
+.restart-btn {
+  flex: 1; background: transparent;
+  border: 1px solid var(--border); border-radius: 12px; padding: 15px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--muted);
+  cursor: pointer; transition: all 0.2s ease;
+}
+.restart-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Share banner shown to link visitors */
+.shared-banner {
+  background: var(--accent-light); border: 1px solid var(--accent);
+  border-radius: 12px; padding: 14px 18px; margin-bottom: 1.5rem;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.shared-banner-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.shared-banner-text { font-size: 13px; line-height: 1.6; color: var(--ink); }
+.shared-banner-text strong { font-weight: 500; }
+
+/* =================== ANIMATIONS =================== */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.fadeUp { animation: fadeUp 0.5s ease both; }
+
+.step-hint {
+  position: fixed; bottom: 1.5rem; right: 1.5rem;
+  font-family: 'Playfair Display', serif; font-size: 11px;
+  color: var(--border); letter-spacing: 0.08em; z-index: 100;
+}
+
+/* =================== SHARE MODAL =================== */
+.share-modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 1000;
+  background: rgba(26,22,18,0.55); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center; padding: 1.5rem;
+}
+.share-modal-overlay.open { display: flex; }
+.share-modal {
+  background: var(--warm-white); border: 1px solid var(--border);
+  border-radius: 20px; padding: 2rem; width: 100%; max-width: 420px;
+  animation: fadeUp 0.3s ease both;
+}
+.share-modal-title {
+  font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700;
+  color: var(--ink); margin-bottom: 0.4rem;
+}
+.share-modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 1.2rem; line-height: 1.5; }
+.share-url-wrap { position: relative; margin-bottom: 1rem; }
+.share-url-input {
+  width: 100%; background: var(--cream); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px; font-family: 'DM Sans', sans-serif;
+  font-size: 12px; color: var(--muted); outline: none;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  cursor: text;
+}
+.share-copy-btn {
+  width: 100%; background: var(--ink); color: var(--cream);
+  border: none; border-radius: 10px; padding: 13px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s ease; margin-bottom: 8px;
+}
+.share-copy-btn:hover { background: var(--accent); }
+.share-copy-btn.copied { background: var(--green); }
+.share-close-btn {
+  width: 100%; background: transparent; border: 1px solid var(--border);
+  border-radius: 10px; padding: 11px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--muted);
+  cursor: pointer; transition: all 0.18s ease;
+}
+.share-close-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+</style>
+</head>
+<body>
+
+<!-- Background -->
+<div class="bg-blob blob-1"></div>
+<div class="bg-blob blob-2"></div>
+<div class="bg-vline vline-l"></div>
+<div class="bg-vline vline-r"></div>
+<div class="step-hint" id="step-hint">01 — Intro</div>
+
+<!-- =================== INTRO PAGE =================== -->
+<div class="page active" id="page-intro">
+  <div class="intro-inner">
+    <div class="eyebrow">Psychological Self-Check</div>
+    <h1 class="logo">Stan<em>Scope</em></h1>
+    <p class="tagline">What does your fandom say about you?</p>
+    <div class="divider-line"></div>
+    <p class="description">
+      You love them — but have you ever wondered <strong>why?</strong><br>
+      StanScope helps you check whether your fandom is <strong>healthy</strong>,<br>
+      and reveals what you might be looking for <strong>in real life.</strong>
+    </p>
+    <div class="input-section">
+      <label class="input-label" for="celeb-input">Who do you stan?</label>
+      <input class="celebrity-input" id="celeb-input" type="text"
+        placeholder="e.g. BTS, IU, Cristiano Ronaldo…"
+        autocomplete="off" oninput="handleInput(this.value)" />
+      <div class="cat-row" id="cat-row">
+        <button class="cat-btn" onclick="selectCat(this)">K-pop Idol</button>
+        <button class="cat-btn" onclick="selectCat(this)">Actor / Actress</button>
+        <button class="cat-btn" onclick="selectCat(this)">Athlete</button>
+        <button class="cat-btn" onclick="selectCat(this)">YouTuber / Creator</button>
+        <button class="cat-btn" onclick="selectCat(this)">Other</button>
+      </div>
+      <button class="cta-btn" id="start-btn" disabled onclick="startQuiz()">Start My Check</button>
+    </div>
+    <p class="footer-note">No personal data is stored. This is for self-reflection only, not a clinical diagnosis.</p>
+  </div>
+</div>
+
+<!-- =================== QUIZ PAGE =================== -->
+<div class="page" id="page-quiz">
+  <div class="quiz-inner">
+    <div class="quiz-header">
+      <div class="quiz-meta">
+        <span class="quiz-meta-left">Question <span class="q-count" id="q-num">1</span> of 20</span>
+        <span class="quiz-meta-right" id="q-section-meta">Section 1 — Enjoyment</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:5%"></div></div>
+    </div>
+    <div class="section-tag" id="q-section-tag">Healthy Enjoyment</div>
+    <p class="question-text" id="q-text"></p>
+    <div class="answer-group" id="answer-group"></div>
+    <button class="back-btn" id="back-btn" onclick="prevQuestion()">← Back</button>
+  </div>
+</div>
+
+<!-- =================== RESULT PAGE =================== -->
+<div class="page" id="page-result">
+  <div class="result-inner" id="result-inner"></div>
+</div>
+
+<script>
+// =================== STATE ===================
+let celebrity = '';
+let category = '';
+let currentQ = 0;
+let answers = [];
+let selectedAnswer = null;
+
+// =================== QUESTIONS ===================
+const sections = [
+  { tag: 'Healthy Enjoyment', meta: 'Section 1 — Enjoyment' },
+  { tag: 'Emotional Dependency', meta: 'Section 2 — Emotional Bond' },
+  { tag: 'Identity & Self', meta: 'Section 3 — Identity' },
+  { tag: 'Parasocial Bond', meta: 'Section 4 — Parasocial Bond' },
+  { tag: 'Real Life Impact', meta: 'Section 5 — Real Life' },
+];
+
+const questions = [
+  { section: 0, text: "I enjoy [C]'s work because it genuinely entertains me." },
+  { section: 0, text: "I like discussing [C] with other fans." },
+  { section: 0, text: "Following [C] is a fun part of my free time." },
+  { section: 0, text: "I feel happy when [C] achieves something great." },
+  { section: 1, text: "When I'm sad or stressed, thinking about [C] makes me feel better." },
+  { section: 1, text: "I feel like [C] understands me, even though we've never met." },
+  { section: 1, text: "My mood often changes depending on news about [C]." },
+  { section: 1, text: "If [C] had a bad day, I would feel genuinely upset too." },
+  { section: 2, text: "I sometimes imagine what [C] would think of my life choices." },
+  { section: 2, text: "I admire [C]'s personality and try to be more like them." },
+  { section: 2, text: "Being a fan of [C] is an important part of who I am." },
+  { section: 2, text: "I feel proud when people know I'm a fan of [C]." },
+  { section: 3, text: "I feel like [C] is someone I personally know." },
+  { section: 3, text: "I would feel a deep personal loss if [C] retired or disappeared." },
+  { section: 3, text: "I sometimes talk about [C] as if they are part of my life." },
+  { section: 3, text: "I feel a sense of loyalty to [C], like a real relationship." },
+  { section: 4, text: "I prefer spending time with [C]'s content over spending time with people around me." },
+  { section: 4, text: "I have skipped real-life plans because of [C]-related content." },
+  { section: 4, text: "I find it hard to feel the same emotional connection with people in my real life." },
+  { section: 4, text: "When I imagine my ideal life, [C] plays a role in it." },
+];
+
+const answerOptions = [
+  { label: 'Not at all', sub: "This doesn't describe me", value: 1 },
+  { label: 'Not really', sub: 'Rarely true for me', value: 2 },
+  { label: 'Sometimes', sub: 'Occasionally true', value: 3 },
+  { label: 'Often', sub: 'This is usually me', value: 4 },
+  { label: 'Completely', sub: 'This is totally me', value: 5 },
+];
+
+// =================== INTRO LOGIC ===================
+function handleInput(val) {
+  celebrity = val.trim();
+  checkReady();
+}
+function selectCat(btn) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  category = btn.textContent;
+  checkReady();
+}
+function checkReady() {
+  document.getElementById('start-btn').disabled = !(celebrity.length > 0 && category);
+}
+function startQuiz() {
+  showPage('page-quiz');
+  document.getElementById('step-hint').textContent = '02 — Quiz';
+  currentQ = 0;
+  answers = [];
+  renderQuestion();
+}
+
+// =================== QUIZ LOGIC ===================
+function renderQuestion() {
+  selectedAnswer = null;
+  const q = questions[currentQ];
+  const qText = q.text.replace(/\[C\]/g, celebrity);
+  const sec = sections[q.section];
+
+  document.getElementById('q-num').textContent = currentQ + 1;
+  document.getElementById('q-section-meta').textContent = sec.meta;
+  document.getElementById('q-section-tag').textContent = sec.tag;
+  document.getElementById('q-text').textContent = qText;
+  document.getElementById('progress-fill').style.width = ((currentQ / 20) * 100) + '%';
+  document.getElementById('back-btn').disabled = currentQ === 0;
+
+  const group = document.getElementById('answer-group');
+  group.innerHTML = '';
+  answerOptions.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn fadeUp';
+    btn.style.animationDelay = (i * 0.06) + 's';
+    btn.innerHTML = `
+      <div class="answer-num">${opt.value}</div>
+      <div>
+        <div class="answer-label">${opt.label}</div>
+        <div class="answer-sub">${opt.sub}</div>
+      </div>`;
+    // Restore previous answer if coming back
+    if (answers[currentQ] && answers[currentQ].value === opt.value) {
+      btn.classList.add('selected');
+      selectedAnswer = opt.value;
+    }
+    btn.onclick = () => selectAnswer(opt.value, btn);
+    group.appendChild(btn);
+  });
+
+  // animate question text
+  const qEl = document.getElementById('q-text');
+  qEl.style.opacity = '0';
+  qEl.style.transform = 'translateY(10px)';
+  setTimeout(() => {
+    qEl.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+    qEl.style.opacity = '1';
+    qEl.style.transform = 'translateY(0)';
+  }, 50);
+}
+
+function selectAnswer(value, btn) {
+  document.querySelectorAll('.answer-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedAnswer = value;
+  // Save answer immediately
+  answers[currentQ] = { q: currentQ, value: selectedAnswer };
+  // Auto-advance after short delay so user sees their selection
+  setTimeout(() => nextQuestion(), 340);
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= questions.length) {
+    showResults();
+  } else {
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQ === 0) return;
+  currentQ--;
+  renderQuestion();
+}
+
+// =================== RESULTS LOGIC ===================
+function buildResultContent(cel, ans, isSharedView) {
+  const total = ans.reduce((s, a) => s + (a ? a.value : 0), 0);
+  const deepAnswers = ans.filter(a => a && questions[a.q].section > 0);
+  deepAnswers.sort((a, b) => b.value - a.value);
+  const top3 = deepAnswers.slice(0, 3);
+
+  let badge, badgeStyle, headline, whatItSays, needFulfilled, realNeed, reflection, actions;
+
+  if (total <= 40) {
+    badge = '✅ Level 1 — Healthy Fan';
+    badgeStyle = `background:var(--green-light);color:var(--green);`;
+    headline = 'Their fandom is a healthy part of their life.';
+    if (!isSharedView) headline = 'Your fandom is a healthy part of your life.';
+    whatItSays = isSharedView
+      ? `They enjoy ${cel} genuinely and freely. Their love adds joy without taking anything away. They have a solid sense of who they are outside of this fandom.`
+      : `You enjoy ${cel} genuinely and freely. Your love for them adds joy to your life without taking anything away. You have a solid sense of who you are outside of this fandom.`;
+    needFulfilled = `<strong>Joy & Aesthetic Pleasure</strong> — simply appreciating great talent. That's a beautiful thing.`;
+    realNeed = isSharedView
+      ? `They're already getting it. They keep nurturing real friendships and passions — their fandom is a bonus, not a substitute.`
+      : `You're already getting it. Keep nurturing the real friendships and passions you have — your fandom is a bonus, not a substitute.`;
+    reflection = `"What other things in your life bring you this same kind of joy?"`;
+    actions = [
+      `Share your favorite ${cel} moment with a real friend this week — joy multiplies when shared.`,
+      `Explore a new hobby inspired by ${cel}'s work (dance, music, fitness, art).`,
+      `Write down 3 people in your life who make you feel the way ${cel}'s content does.`,
+    ];
+  } else if (total <= 70) {
+    badge = '⚠️ Level 2 — Intense-Personal';
+    badgeStyle = `background:var(--amber-light);color:var(--amber);`;
+    headline = isSharedView ? 'Their fandom runs deeper than entertainment.' : 'Your fandom runs deeper than entertainment.';
+    whatItSays = isSharedView
+      ? `${cel} feels almost like a real presence in their life — someone who gets them. That's not strange, but it's worth paying attention to.`
+      : `${cel} feels almost like a real presence in your life — someone who gets you. That's not strange, but it's worth paying attention to.`;
+    needFulfilled = `<strong>Belonging, Emotional Safety, or Identity</strong> — leaning on this bond during moments when real-life connection feels hard or unavailable.`;
+    realNeed = isSharedView
+      ? `Deeper, more consistent emotional connections with real people. Someone they can talk to the way they "talk to" ${cel} in their head.`
+      : `Deeper, more consistent emotional connections with real people around you. Someone you can talk to the way you "talk to" ${cel} in your head.`;
+    reflection = `"Is there someone in your real life you could open up to more? What's stopping you?"`;
+    actions = [
+      `Next time you feel the urge to watch ${cel}'s content to feel better — pause and text a real friend first.`,
+      `Join a fan community in person, not just online — real human faces matter.`,
+      `Try journaling about what ${cel} gives you emotionally — then ask: who in real life could give you that too?`,
+      `Notice when your mood drops because of ${cel} news — that's a signal worth paying attention to.`,
+    ];
+  } else {
+    badge = '🔴 Level 3 — Needs Attention';
+    badgeStyle = `background:var(--red-light);color:var(--red);`;
+    headline = isSharedView ? 'Their fandom might be filling a gap that deserves real attention.' : 'Your fandom might be filling a gap that deserves real attention.';
+    whatItSays = isSharedView
+      ? `They've built a very deep emotional world around ${cel}. Something in their real life may feel lonely, uncertain, or unfulfilling. That's completely human. But ${cel} can't fully fill that space.`
+      : `You've built a very deep emotional world around ${cel}. This didn't happen for no reason — something in your real life may feel lonely, uncertain, or unfulfilling. That's completely human. But ${cel} can't fully fill that space.`;
+    needFulfilled = `<strong>Deep loneliness, need for unconditional acceptance, or a search for identity and purpose</strong> — these are real and valid needs. They deserve real answers.`;
+    realNeed = isSharedView
+      ? `Genuine human connection, possibly professional support — not because something is "wrong" with them, but because they deserve real relationships that love them back.`
+      : `Genuine human connection, possibly professional support. Not because something is "wrong" with you — but because you deserve real relationships that love you back.`;
+    reflection = `"If ${cel} didn't exist tomorrow, what would feel empty in your life? That emptiness is worth exploring."`;
+    actions = [
+      `Try a 1-week challenge — limit ${cel} content to 30 minutes a day and notice how you feel.`,
+      `Write a letter to yourself about who you want to be — without mentioning ${cel} once.`,
+      `Reach out to one person you've been distant from — a friend, a family member, anyone.`,
+      `Consider talking to a school counselor or therapist — not because you're broken, but because you deserve someone real who listens.`,
+      `Ask yourself honestly: "What am I avoiding in my real life right now?"`,
+    ];
+  }
+
+  const topQHTML = top3.map(a => {
+    const qText = questions[a.q].text.replace(/\[C\]/g, cel);
+    return `<div class="top-q-item"><span class="top-q-score">${a.value}/5</span>${qText}</div>`;
+  }).join('');
+
+  const actionsHTML = actions.map(a => `
+    <div class="action-item">
+      <div class="action-dot"></div>
+      <div class="action-text">${a}</div>
+    </div>`).join('');
+
+  const sharedBanner = isSharedView ? `
+    <div class="shared-banner fadeUp" style="animation-delay:0s">
+      <div class="shared-banner-icon">👀</div>
+      <div class="shared-banner-text">
+        Someone shared their StanScope result with you.<br>
+        <strong>Curious about your own? Take the quiz below — it only takes 2 minutes.</strong>
+      </div>
+    </div>` : '';
+
+  const shareOrRestart = isSharedView
+    ? `<div class="result-btn-row fadeUp" style="animation-delay:0.85s">
+        <button class="restart-btn" style="flex:1;margin-top:0" onclick="restartApp()">↩ Take the quiz myself</button>
+      </div>`
+    : `<div class="result-btn-row fadeUp" style="animation-delay:0.85s">
+        <button class="share-btn" id="share-btn" onclick="shareResult()">
+          <span>⬆</span> Share My Result
+        </button>
+        <button class="restart-btn" onclick="restartApp()">↩ Retake quiz</button>
+      </div>`;
+
+  return `
+    ${sharedBanner}
+    <div class="fadeUp" style="animation-delay:0.1s">
+      <div class="result-level-badge" style="${badgeStyle}">${badge}</div>
+      <h2 class="result-headline">${headline}</h2>
+      <div class="result-score-row">
+        <span class="result-score-num">${total}</span>
+        <span class="result-score-denom">/ 100</span>
+      </div>
+    </div>
+    <div class="fadeUp" style="animation-delay:0.25s">
+      <div class="result-card">
+        <div class="result-card-label">What this says</div>
+        <div class="result-card-text">${whatItSays}</div>
+      </div>
+    </div>
+    <div class="fadeUp" style="animation-delay:0.35s">
+      <div class="result-card">
+        <div class="result-card-label">The need being fulfilled</div>
+        <div class="result-card-text">${needFulfilled}</div>
+      </div>
+    </div>
+    <div class="fadeUp" style="animation-delay:0.45s">
+      <div class="result-card">
+        <div class="result-card-label">${isSharedView ? 'What they actually need in real life' : 'What you actually need in real life'}</div>
+        <div class="result-card-text">${realNeed}</div>
+      </div>
+    </div>
+    <div class="fadeUp" style="animation-delay:0.55s">
+      <div class="reflection-box">
+        <div class="reflection-label">Reflect on this</div>
+        <div class="reflection-text">${reflection}</div>
+      </div>
+    </div>
+    <div class="fadeUp" style="animation-delay:0.65s">
+      <div class="top-questions">
+        <div class="top-q-title">${isSharedView ? 'Their highest-scoring responses' : 'Your highest-scoring responses'}</div>
+        ${topQHTML}
+      </div>
+    </div>
+    <div class="fadeUp" style="animation-delay:0.75s">
+      <div class="actions-section">
+        <div class="actions-title">What to do next</div>
+        ${actionsHTML}
+      </div>
+    </div>
+    ${shareOrRestart}
+  `;
+}
+
+function showResults() {
+  showPage('page-result');
+  document.getElementById('step-hint').textContent = '03 — Result';
+
+  // Encode result into URL so it can be shared
+  const payload = {
+    c: celebrity,
+    cat: category,
+    a: answers.map(a => a ? a.value : 0)
+  };
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  try { history.replaceState(null, '', '#r=' + encoded); } catch(e) {}
+
+  document.getElementById('result-inner').innerHTML = buildResultContent(celebrity, answers, false);
+  window.scrollTo(0, 0);
+}
+
+function getShareURL() {
+  const payload = {
+    c: celebrity,
+    cat: category,
+    a: answers.map(a => a ? a.value : 0)
+  };
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  try {
+    const href = window.location.href;
+    // Strip any existing hash/query, then append hash
+    const base = href.split('#')[0].split('?')[0];
+    if (base && !base.startsWith('about:')) {
+      return base + '#r=' + encoded;
+    }
+  } catch(e) {}
+  // Fallback shown in modal — user sees it's a hash fragment
+  return '#r=' + encoded;
+}
+
+function openShareModal(url) {
+  const input = document.getElementById('share-url-input');
+  const btn = document.getElementById('share-copy-btn');
+  input.value = url;
+  btn.textContent = 'Copy Link';
+  btn.classList.remove('copied');
+  document.getElementById('share-modal-overlay').classList.add('open');
+  setTimeout(() => { input.select(); }, 100);
+}
+
+function closeShareModal(e) {
+  if (e && e.target !== document.getElementById('share-modal-overlay')) return;
+  document.getElementById('share-modal-overlay').classList.remove('open');
+}
+
+function copyShareURL() {
+  const input = document.getElementById('share-url-input');
+  const btn = document.getElementById('share-copy-btn');
+  const url = input.value;
+
+  const markCopied = () => {
+    btn.classList.add('copied');
+    btn.textContent = '\u2713 Copied!';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.textContent = 'Copy Link';
+    }, 2000);
+  };
+
+  // 1. Web Share API (mobile native sheet)
+  if (navigator.share && /Mobi|Android|iPhone/i.test(navigator.userAgent)) {
+    navigator.share({ title: 'My StanScope Result', url: url })
+      .then(() => closeShareModal())
+      .catch(() => {}); // user cancelled — keep modal open
+    return;
+  }
+  // 2. Modern clipboard API
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(markCopied).catch(() => {
+      input.select(); // 3. manual select fallback
+    });
+    return;
+  }
+  // 3. execCommand fallback
+  input.select();
+  try {
+    document.execCommand('copy');
+    markCopied();
+  } catch(e) {
+    // 4. Just leave text selected so user can Ctrl+C
+  }
+}
+
+function shareResult() {
+  const url = getShareURL();
+
+  // Try Web Share API first on mobile
+  if (navigator.share && /Mobi|Android|iPhone/i.test(navigator.userAgent)) {
+    navigator.share({ title: 'My StanScope Result', url: url }).catch(() => {
+      openShareModal(url);
+    });
+    return;
+  }
+
+  // Desktop: try clipboard silently, then always show modal for confirmation
+  const btn = document.getElementById('share-btn');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(() => {
+      btn.classList.add('copied');
+      btn.innerHTML = '<span>\u2713</span> Link Copied!';
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = '<span>\u2b06</span> Share My Result';
+      }, 2500);
+    }).catch(() => {
+      openShareModal(url);
+    });
+  } else {
+    openShareModal(url);
+  }
+}
+
+// =================== NAVIGATION ===================
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function restartApp() {
+  celebrity = '';
+  category = '';
+  currentQ = 0;
+  answers = [];
+  selectedAnswer = null;
+  document.getElementById('celeb-input').value = '';
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('start-btn').disabled = true;
+  document.getElementById('step-hint').textContent = '01 — Intro';
+  try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch(e) {}
+  try { location.hash = ''; } catch(e) {}
+  showPage('page-intro');
+}
+
+// =================== SHARED LINK DETECTION ===================
+(function() {
+  let r;
+  try {
+    // Support both hash (#r=...) and legacy query (?r=...) formats
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#r=')) {
+      r = hash.slice(3);
+    } else {
+      r = new URLSearchParams(window.location.search).get('r');
+    }
+  } catch(e) {}
+  if (!r) return;
+  try {
+    const payload = JSON.parse(decodeURIComponent(escape(atob(r))));
+    const sharedCel = payload.c || 'this celebrity';
+    const sharedAnswers = (payload.a || []).map((v, i) => ({ q: i, value: v }));
+    showPage('page-result');
+    document.getElementById('step-hint').textContent = '03 — Result';
+    document.getElementById('result-inner').innerHTML = buildResultContent(sharedCel, sharedAnswers, true);
+    window.scrollTo(0, 0);
+  } catch(e) {
+    // Invalid link — just show intro
+  }
+})();
+</script>
+
+<!-- =================== SHARE MODAL =================== -->
+<div class="share-modal-overlay" id="share-modal-overlay" onclick="closeShareModal(event)">
+  <div class="share-modal">
+    <div class="share-modal-title">Share Your Result</div>
+    <div class="share-modal-sub">Copy the link below and share it with friends.</div>
+    <div class="share-url-wrap">
+      <input class="share-url-input" id="share-url-input" readonly
+        onclick="this.select()" value="" />
+    </div>
+    <button class="share-copy-btn" id="share-copy-btn" onclick="copyShareURL()">Copy Link</button>
+    <button class="share-close-btn" onclick="closeShareModal()">Close</button>
+  </div>
+</div>
+
+</body>
+</html>
