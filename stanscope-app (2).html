@@ -710,34 +710,51 @@ function showResults() {
   document.getElementById('step-hint').textContent = '03 — Result';
 
   // Encode result into URL so it can be shared
-  const payload = {
-    c: celebrity,
-    cat: category,
-    a: answers.map(a => a ? a.value : 0)
-  };
-  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  const encoded = encodePayload(celebrity, category, answers);
   try { history.replaceState(null, '', '#r=' + encoded); } catch(e) {}
 
   document.getElementById('result-inner').innerHTML = buildResultContent(celebrity, answers, false);
   window.scrollTo(0, 0);
 }
 
-function getShareURL() {
-  const payload = {
-    c: celebrity,
-    cat: category,
-    a: answers.map(a => a ? a.value : 0)
+function encodePayload(cel, cat, ans) {
+  // Compact format: "celeb|catIdx|AAAAAAAAAAAAAAAAAAAA"
+  // catIdx: 0=K-pop 1=Actor 2=Athlete 3=YouTuber 4=Other
+  const catMap = ['K-pop Idol','Actor / Actress','Athlete','YouTuber / Creator','Other'];
+  const catIdx = catMap.indexOf(cat) >= 0 ? catMap.indexOf(cat) : 4;
+  const digits = ans.map(a => a ? a.value : 0).join('');
+  const compact = cel + '|' + catIdx + '|' + digits;
+  return btoa(unescape(encodeURIComponent(compact)));
+}
+
+function decodePayload(encoded) {
+  const raw = decodeURIComponent(escape(atob(encoded)));
+  // New compact format: "celeb|catIdx|digits"
+  const parts = raw.split('|');
+  if (parts.length === 3 && /^[0-4]$/.test(parts[1]) && /^[0-5]{20}$/.test(parts[2])) {
+    const catMap = ['K-pop Idol','Actor / Actress','Athlete','YouTuber / Creator','Other'];
+    const cel = parts[0] || 'this celebrity';
+    const cat = catMap[parseInt(parts[1])] || 'Other';
+    const ans = parts[2].split('').map((d, i) => ({ q: i, value: parseInt(d) }));
+    return { c: cel, cat, a: ans };
+  }
+  // Legacy JSON format fallback
+  const json = JSON.parse(raw);
+  return {
+    c: json.c || 'this celebrity',
+    cat: json.cat || 'Other',
+    a: (json.a || []).map((v, i) => ({ q: i, value: v }))
   };
-  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+}
+
+function getShareURL() {
+  const encoded = encodePayload(celebrity, category, answers);
   try {
-    const href = window.location.href;
-    // Strip any existing hash/query, then append hash
-    const base = href.split('#')[0].split('?')[0];
+    const base = window.location.href.split('#')[0].split('?')[0];
     if (base && !base.startsWith('about:')) {
       return base + '#r=' + encoded;
     }
   } catch(e) {}
-  // Fallback shown in modal — user sees it's a hash fragment
   return '#r=' + encoded;
 }
 
@@ -859,12 +876,10 @@ function restartApp() {
   } catch(e) {}
   if (!r) return;
   try {
-    const payload = JSON.parse(decodeURIComponent(escape(atob(r))));
-    const sharedCel = payload.c || 'this celebrity';
-    const sharedAnswers = (payload.a || []).map((v, i) => ({ q: i, value: v }));
+    const decoded = decodePayload(r);
     showPage('page-result');
     document.getElementById('step-hint').textContent = '03 — Result';
-    document.getElementById('result-inner').innerHTML = buildResultContent(sharedCel, sharedAnswers, true);
+    document.getElementById('result-inner').innerHTML = buildResultContent(decoded.c, decoded.a, true);
     window.scrollTo(0, 0);
   } catch(e) {
     // Invalid link — just show intro
