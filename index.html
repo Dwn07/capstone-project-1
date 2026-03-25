@@ -716,5 +716,42 @@ function checkSharedLink() {
   } catch(e) { return false; }
 }
 </script>
+     const sharedCel = payload.c || 'this celebrity';
+    const sharedAnswers = (payload.a || []).map((v, i) => ({ q: i, value: v }));
+    showPage('page-result');
+    document.getElementById('step-hint').textContent = '03 — Result';
+    document.getElementById('result-inner').innerHTML = buildResultContent(sharedCel, sharedAnswers, true);
+    window.scrollTo(0, 0);
+    return true;
+  } catch(e) { return false; }
+}
+</script>
+
+<button onclick="login()">Login with Google</button>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCgkEAaeTP88rqtcf6EnjOY96_3FeKZrgA",
+  authDomain: "stanscope-9420c.firebaseapp.com",
+  projectId: "stanscope-9420c",
+  storageBucket: "stanscope-9420c.appspot.com",
+  messagingSenderId: "799094853365",
+  appId: "1:799094853365:web:a20adb79056b5a41d7ffbc"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+function login() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider)
+    .then(result => {
+      alert("로그인 성공: " + result.user.email);
+    })
+    .catch(error => console.error(error));
+}
+</script>
 </body>
 </html>
